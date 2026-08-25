@@ -6,8 +6,8 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import dts from 'vite-plugin-dts';
 
-import { preserveUseClient } from './build/preserve-use-client.js';
-import { emitStyles } from './build/emit-styles.js';
+import { preserveUseClient } from './plugins/preserve-use-client.js';
+import { emitStyles } from './plugins/emit-styles.js';
 
 const root = fileURLToPath(new URL('.', import.meta.url));
 const srcDir = resolve(root, 'src');
