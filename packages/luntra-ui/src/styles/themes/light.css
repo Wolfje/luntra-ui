@@ -22,7 +22,7 @@
   --luntra-color-action-subtle-bg-hover: var(--luntra-color-neutral-200);
   --luntra-color-action-subtle-bg-active: var(--luntra-color-neutral-300);
   --luntra-color-action-subtle-fg: var(--luntra-color-neutral-900);
-  --luntra-color-action-ghost-fg: var(--luntra-brand-700);
+  --luntra-color-action-ghost-fg: var(--luntra-brand-800);
   --luntra-color-action-ghost-bg-hover: var(--luntra-color-neutral-100);
   --luntra-color-action-ghost-bg-active: var(--luntra-color-neutral-200);
   --luntra-color-destructive-bg: var(--luntra-color-red-700);
