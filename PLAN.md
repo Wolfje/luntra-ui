@@ -367,24 +367,28 @@ Consumers override with `[data-luntra-part='button'][data-variant='primary'] { -
 
 - `@changesets/cli` 3.x, `main` as the release branch, `access: public`.
 - `apps/docs` in `ignore` — never published.
-- PR gate: a changeset is required for any diff under `packages/`.
-- `release.yml`: `changesets/action` opens a "Version Packages" PR; merging it publishes to npm with **provenance** (`NPM_CONFIG_PROVENANCE=true`, OIDC).
-- `ci.yml`: lint → typecheck → `test --coverage` → build → `publint` → `attw --pack` → `size-limit` → docs build.
-- Node 20.19 / 22 / 24 matrix.
+- PR gate: `scripts/require-changeset.mjs` fails a PR that changes published source without adding a changeset. Tests, markdown and internal tooling are exempt — a release whose only content is "renamed a test variable" is noise in a changelog people are meant to read, and a changelog people skim is one that hides real breakage.
+- `release.yml`: `changesets/action` opens a "Version Packages" PR; merging it publishes to npm with **provenance** (`NPM_CONFIG_PROVENANCE=true`, OIDC via `id-token: write`).
+- `ci.yml`, in four jobs:
+  - `verify` — lint + `format:check`, single Node. ESLint and Prettier don't vary by runtime.
+  - `test` — typecheck + `test --coverage` on Node 20.19 / 22 / 24, `fail-fast: false`. "Broken on the oldest supported version" and "broken everywhere" are different bugs, and the difference is most of the diagnosis.
+  - `build` — build → `test:dist` → `publint` → `attw` → `size-limit` → docs build → docs typecheck → SSR a11y audit.
+  - `changeset` — PR only.
+- **Ordering is load-bearing.** `build-output.test.ts` skips itself when `dist/` is absent, so running it before the build is worse than not running it at all: a green tick for assertions that never executed. It runs as `test:dist`, after the build, and only there. The docs typecheck likewise comes after the docs build, which is what generates the route tree and the props table.
 
 ---
 
 ## 13. Milestones
 
-| #      | Milestone          | Output                                                                                                                                  |
-| ------ | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
-| **M0** | Workspace scaffold | pnpm workspace, TS config, ESLint 9 flat, git + GitHub repo `Wolfje/luntra-ui`                                                          |
-| **M1** | Tokens & theming   | `tokens/source`, generator script, `tokens.css`, light/dark/brand sheets, `ThemeProvider` + `getThemeScript()`, contrast tests          |
-| **M2** | Build & exports    | Vite multi-entry lib build, `"use client"` plugin, dts, export map, `publint`/`attw` green                                              |
-| **M3** | Utils & hooks      | `cx`, `dataAttrs`, `mergeProps`, `polymorphic`, `devWarn`, `useMergedRefs`, `useIsomorphicLayoutEffect`, `useControllableState` + tests |
-| **M4** | `Button`           | Component, CSS module, `useButton`, full unit + axe + SSR test matrix, `a11y.md`                                                        |
-| **M5** | Docs portal        | TanStack Start + MDX, catch-all content route, `Preview`/`PropsTable`/`TokenTable`, Button page                                         |
-| **M6** | CI & first release | `ci.yml`, `release.yml`, changeset, publish `@luntra-ui/react@0.1.0`                                                                    |
+| #      | Milestone          | Status | Output                                                                                                                                  |
+| ------ | ------------------ | ------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| **M0** | Workspace scaffold | Done   | pnpm workspace, TS config, ESLint 9 flat, git + GitHub repo `Wolfje/luntra-ui`                                                          |
+| **M1** | Tokens & theming   | Done   | `tokens/source`, generator script, `tokens.css`, light/dark/brand sheets, `ThemeProvider` + `getThemeScript()`, contrast tests          |
+| **M2** | Build & exports    | Done   | Vite multi-entry lib build, `"use client"` plugin, dts, export map, `publint`/`attw` green                                              |
+| **M3** | Utils & hooks      | Done   | `cx`, `dataAttrs`, `mergeProps`, `polymorphic`, `devWarn`, `useMergedRefs`, `useIsomorphicLayoutEffect`, `useControllableState` + tests |
+| **M4** | `Button`           | Done   | Component, CSS module, `useButton`, full unit + axe + SSR test matrix, `a11y.md`                                                        |
+| **M5** | Docs portal        | Done   | TanStack Start + MDX, catch-all content route, `Preview`/`PropsTable`/`TokenTable`, Button page                                         |
+| **M6** | CI & first release | Done   | `ci.yml`, `release.yml`, changeset, publish `@luntra-ui/react@0.1.0`                                                                    |
 
 ---
 

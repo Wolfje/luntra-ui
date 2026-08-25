@@ -69,5 +69,19 @@ export default tseslint.config(
     },
   },
 
+  /*
+   * Plain-JavaScript tooling. The TypeScript block above declares Node's
+   * globals, but build and CI scripts written as `.mjs` never match it, so
+   * `process` and `console` read as undefined.
+   */
+  {
+    files: ['**/scripts/**/*.{js,mjs,cjs}'],
+    languageOptions: {
+      ecmaVersion: 2023,
+      sourceType: 'module',
+      globals: { ...globals.node },
+    },
+  },
+
   prettier,
 );

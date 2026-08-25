@@ -1,0 +1,190 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# A new push to a PR makes the in-flight run irrelevant. Let it go rather than
+# paying for it. `main` is excluded from cancellation — those runs are the
+# record of what the release branch actually did.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+env:
+  # Turborepo-style noise and update nags are not useful in a log you only read
+  # when something has failed.
+  DO_NOT_TRACK: '1'
+
+permissions:
+  contents: read
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Static analysis. One Node version — ESLint and Prettier do not vary by
+  # runtime, so a matrix here would buy three identical answers.
+  # ---------------------------------------------------------------------------
+  verify:
+    name: Lint & format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      # Formatting is checked, never fixed. A CI job that pushes a
+      # reformat commit rewrites history under the author and turns a
+      # thirty-second local fix into a merge conflict.
+      - name: Check formatting
+        run: pnpm format:check
+
+  # ---------------------------------------------------------------------------
+  # Types and tests, across every Node version the package claims to support.
+  #
+  # This is the matrix that earns its cost: `engines` promises Node 20.19+, and
+  # the only way that promise stays true is running the suite on the oldest
+  # version we claim rather than the one that happens to be on the developer's
+  # machine.
+  # ---------------------------------------------------------------------------
+  test:
+    name: Test (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      # Don't cancel Node 24 because Node 20 failed. "Broken on the oldest
+      # supported version" and "broken everywhere" are different bugs and the
+      # difference is most of the diagnosis.
+      fail-fast: false
+      matrix:
+        node: ['20.19', '22', '24']
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ matrix.node }}
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # The library's own typecheck only. The docs typecheck needs generated
+      # files that don't exist yet at this point — it runs in `build`, after
+      # the things that generate them.
+      - name: Typecheck library
+        run: pnpm --filter @luntra-ui/react run typecheck
+
+      - name: Test
+        run: pnpm --filter @luntra-ui/react run test:coverage
+
+      # One version uploads coverage. Three would race to overwrite each other
+      # and tell us nothing extra.
+      - name: Upload coverage
+        if: matrix.node == '22'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: packages/luntra-ui/coverage
+          retention-days: 7
+
+  # ---------------------------------------------------------------------------
+  # The published artifact, and everything that can only be checked once it
+  # exists.
+  # ---------------------------------------------------------------------------
+  build:
+    name: Build & package checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build library
+        run: pnpm build
+
+      # `build-output.test.ts` asserts the published contract — the export map
+      # resolves, the `"use client"` directives survived, the CSS shipped. It
+      # skips itself when `dist/` is missing, which means running it before the
+      # build is worse than not running it: a green tick for an assertion that
+      # never executed. It runs here, and only here, on purpose.
+      - name: Verify built output
+        run: pnpm --filter @luntra-ui/react run test:dist
+
+      # publint reads package.json the way a bundler does; attw reads the
+      # type declarations the way a consumer's editor does. Between them they
+      # catch the class of packaging bug that only ever reproduces after
+      # publish, when the fix costs a version number.
+      - name: Lint package manifest
+        run: pnpm --filter @luntra-ui/react run check:publint
+
+      - name: Check type resolution
+        run: pnpm --filter @luntra-ui/react run check:attw
+
+      - name: Check bundle size
+        run: pnpm --filter @luntra-ui/react run size
+
+      # The docs are the library's first consumer, and they only import through
+      # public subpaths — so this build fails if the export map is broken,
+      # before a real consumer finds out. It also generates the route tree and
+      # the props table, which is why the docs typecheck comes after it rather
+      # than before.
+      - name: Build docs
+        run: pnpm --filter @luntra-ui/docs run build
+
+      - name: Typecheck docs
+        run: pnpm --filter @luntra-ui/docs run typecheck
+
+      # Renders every route through the real SSR handler and runs axe over the
+      # HTML. Server-rendered markup is what assistive technology meets first
+      # and what a reader with JavaScript disabled or still loading meets only;
+      # testing components in isolation never covers the document they end up
+      # in — landmarks, heading order, the skip link, duplicate IDs.
+      - name: Accessibility audit (server-rendered)
+        run: pnpm --filter @luntra-ui/docs run test:a11y
+
+  # ---------------------------------------------------------------------------
+  # A published change with no changeset is a change that silently never ships.
+  # ---------------------------------------------------------------------------
+  changeset:
+    name: Changeset
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      # `changeset status` diffs against the base branch, so it needs history
+      # rather than the default single-commit checkout.
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Require a changeset for package changes
+        run: node scripts/require-changeset.mjs
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.ref }}

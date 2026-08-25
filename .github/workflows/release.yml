@@ -1,0 +1,79 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  # Never run two releases at once. Two concurrent `changeset publish` calls
+  # race on the same version number and one of them loses noisily, after
+  # having already tagged.
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    name: Version or publish
+    runs-on: ubuntu-latest
+
+    permissions:
+      # Push the "Version Packages" branch and its tags.
+      contents: write
+      # Open and update the release pull request.
+      pull-requests: write
+      # Mint the OIDC token npm uses to attest provenance. Without this the
+      # publish still succeeds but ships unattested, and nobody notices until
+      # someone goes looking for the link between the tarball and the commit.
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          # changesets reads tags to work out what has already shipped.
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+          # Writes the registry into .npmrc, which is what `changeset publish`
+          # authenticates against.
+          registry-url: https://registry.npmjs.org
+
+      - run: pnpm install --frozen-lockfile
+
+      # Belt and braces. CI already gates the pull request, but this workflow
+      # runs on `main` and publishes from it — the one place where "probably
+      # fine" is not good enough. A broken build caught here is a failed
+      # workflow; caught after publish it is a version number burned forever,
+      # because npm will not let you reuse one.
+      - name: Build
+        run: pnpm build
+
+      - name: Verify built output
+        run: pnpm --filter @luntra-ui/react run test:dist
+
+      - name: Check package
+        run: pnpm --filter @luntra-ui/react run check:exports
+
+      # Either opens/updates the "Version Packages" pull request (when there
+      # are pending changesets), or — if the previous run's version PR has just
+      # been merged and no changesets remain — runs `publish`.
+      - name: Create release pull request or publish
+        uses: changesets/action@v1
+        with:
+          version: pnpm run version-packages
+          publish: pnpm run release
+          commit: 'chore(release): version packages'
+          title: 'chore(release): version packages'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          # Signs the tarball against this workflow run, so anyone can verify
+          # which commit and which workflow produced what they installed.
+          NPM_CONFIG_PROVENANCE: 'true'
