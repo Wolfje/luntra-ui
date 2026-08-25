@@ -1,0 +1,23 @@
+/*
+ * `@luntra-ui/react/styles` — everything, in the right order.
+ *
+ * Order between themes and brands does not matter: brands only ever declare
+ * `--luntra-brand-*` ramp stops, and themes only ever declare semantic roles.
+ * They touch disjoint sets of custom properties, so they cannot fight over
+ * specificity or source order. That is the whole reason for the ramp
+ * indirection.
+ *
+ * If you want a smaller payload, import the pieces you need instead:
+ *
+ *   @luntra-ui/react/styles/tokens.css
+ *   @luntra-ui/react/styles/themes/light.css
+ *   @luntra-ui/react/styles/themes/dark.css
+ *   @luntra-ui/react/styles/themes/brands/teal.css
+ */
+
+@import './tokens.css';
+@import './themes/light.css';
+@import './themes/dark.css';
+@import './themes/brands/default.css';
+@import './themes/brands/teal.css';
+@import './reset.css';
