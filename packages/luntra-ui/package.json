@@ -1,0 +1,102 @@
+{
+  "name": "@luntra-ui/react",
+  "version": "0.0.0",
+  "description": "Accessible, themeable React component library. WCAG 2.2 AA by default.",
+  "license": "MIT",
+  "author": "Luntra UI",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Wolfje/luntra-ui.git",
+    "directory": "packages/luntra-ui"
+  },
+  "homepage": "https://github.com/Wolfje/luntra-ui#readme",
+  "bugs": "https://github.com/Wolfje/luntra-ui/issues",
+  "keywords": [
+    "react",
+    "component-library",
+    "design-system",
+    "accessibility",
+    "wcag",
+    "a11y",
+    "css-modules",
+    "design-tokens",
+    "ssr"
+  ],
+  "type": "module",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/components/index.d.ts",
+      "default": "./dist/components/index.js"
+    },
+    "./button": {
+      "types": "./dist/components/button/index.d.ts",
+      "default": "./dist/components/button/index.js"
+    },
+    "./hooks": {
+      "types": "./dist/hooks/index.d.ts",
+      "default": "./dist/hooks/index.js"
+    },
+    "./utils": {
+      "types": "./dist/utils/index.d.ts",
+      "default": "./dist/utils/index.js"
+    },
+    "./tokens": {
+      "types": "./dist/tokens/index.d.ts",
+      "default": "./dist/tokens/index.js"
+    },
+    "./styles": "./dist/styles/index.css",
+    "./styles/tokens.css": "./dist/styles/tokens.css",
+    "./styles/themes/*": "./dist/styles/themes/*",
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build:tokens": "tsx scripts/build-tokens.ts",
+    "build": "pnpm run build:tokens && vite build",
+    "dev": "vite build --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit",
+    "check:exports": "publint --strict && attw --pack ."
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.6",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.5",
+    "@vitejs/plugin-react": "^6.1.0",
+    "@vitest/coverage-v8": "^4.1.11",
+    "jsdom": "^30.0.1",
+    "publint": "^0.3.24",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "tsx": "^4.20.6",
+    "typescript": "~5.9.3",
+    "vite": "^8.2.2",
+    "vite-plugin-dts": "^5.0.3",
+    "vitest": "^4.1.11",
+    "vitest-axe": "^0.1.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "engines": {
+    "node": ">=20.19.0"
+  }
+}
