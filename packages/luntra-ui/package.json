@@ -1,6 +1,6 @@
 {
   "name": "@luntra-ui/react",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Accessible, themeable React component library. WCAG 2.2 AA by default.",
   "license": "MIT",
   "author": "Luntra UI",
