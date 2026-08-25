@@ -20,3 +20,12 @@ export {
   DEFAULT_THEME_STORAGE_KEY,
   DEFAULT_BRAND_STORAGE_KEY,
 } from './theme-provider/index.js';
+
+export { Button, useButton } from './button/index.js';
+export type {
+  ButtonProps,
+  ButtonSize,
+  ButtonVariant,
+  ButtonElementKind,
+  UseButtonOptions,
+} from './button/index.js';

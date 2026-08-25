@@ -1,0 +1,227 @@
+/*
+ * Button.
+ *
+ * One class, every variation driven by data attributes. That keeps the public
+ * styling surface stable: a consumer overrides
+ * `[data-luntra-part='button'][data-variant='ghost']` and never has to know or
+ * pin a generated class name.
+ */
+
+.root {
+  /*
+   * Component tokens. Declared on the element itself, so an application can
+   * retheme a single button — or every button under a container — by setting
+   * these, without touching the semantic layer everything else shares.
+   */
+  --luntra-button-bg: var(--luntra-color-action-bg);
+  --luntra-button-bg-hover: var(--luntra-color-action-bg-hover);
+  --luntra-button-bg-active: var(--luntra-color-action-bg-active);
+  --luntra-button-fg: var(--luntra-color-action-fg);
+  --luntra-button-border-color: transparent;
+  --luntra-button-border-width: var(--luntra-border-width-thin);
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--luntra-space-2);
+
+  /*
+   * WCAG 2.2 SC 2.5.8 (Target Size, Minimum) requires 24x24 CSS pixels. The
+   * min-height carries it even when a consumer passes a one-character label,
+   * which is exactly the case that would otherwise fail.
+   */
+  min-height: var(--luntra-target-size-min);
+  padding: var(--luntra-space-2) var(--luntra-space-4);
+
+  border: var(--luntra-button-border-width) solid var(--luntra-button-border-color);
+  border-radius: var(--luntra-radius-md);
+
+  background-color: var(--luntra-button-bg);
+  color: var(--luntra-button-fg);
+
+  font-family: inherit;
+  font-size: var(--luntra-font-size-sm);
+  font-weight: var(--luntra-font-weight-medium);
+  line-height: var(--luntra-line-height-tight);
+
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  vertical-align: middle;
+
+  cursor: pointer;
+  user-select: none;
+
+  transition:
+    background-color var(--luntra-duration-fast) var(--luntra-easing-standard),
+    border-color var(--luntra-duration-fast) var(--luntra-easing-standard),
+    color var(--luntra-duration-fast) var(--luntra-easing-standard);
+}
+
+/*
+ * Hover styling is gated behind `hover: hover`. Touch browsers emulate :hover
+ * on tap and leave it stuck until the next tap elsewhere, so an unqualified
+ * rule leaves buttons looking permanently hovered on a phone.
+ */
+@media (hover: hover) {
+  .root:hover:not([data-disabled]) {
+    background-color: var(--luntra-button-bg-hover);
+  }
+}
+
+.root:active:not([data-disabled]) {
+  background-color: var(--luntra-button-bg-active);
+}
+
+/*
+ * WCAG 2.2 SC 2.4.13 (Focus Appearance): the indicator must be at least a
+ * 2px-thick perimeter and reach 3:1 against adjacent colours. `focusRing` is
+ * gated on that ratio by the contrast tests.
+ *
+ * `:focus-visible` rather than `:focus` so a pointer click does not leave a
+ * ring behind — the heuristic browsers already implement is better than
+ * anything reimplemented here.
+ */
+.root:focus-visible {
+  outline: var(--luntra-focus-ring-width) var(--luntra-focus-ring-style)
+    var(--luntra-color-focus-ring);
+  outline-offset: var(--luntra-focus-ring-offset);
+}
+
+/* Variants ---------------------------------------------------------------- */
+
+.root[data-variant='secondary'] {
+  --luntra-button-bg: var(--luntra-color-action-subtle-bg);
+  --luntra-button-bg-hover: var(--luntra-color-action-subtle-bg-hover);
+  --luntra-button-bg-active: var(--luntra-color-action-subtle-bg-active);
+  --luntra-button-fg: var(--luntra-color-action-subtle-fg);
+
+  /*
+   * A tonal fill can sit close in luminance to the page. SC 1.4.11 requires a
+   * control's own boundary to reach 3:1 against what surrounds it, so the
+   * border is what makes a secondary button identifiable rather than decorative.
+   */
+  --luntra-button-border-color: var(--luntra-color-border-strong);
+}
+
+.root[data-variant='ghost'] {
+  --luntra-button-bg: transparent;
+  --luntra-button-bg-hover: var(--luntra-color-action-ghost-bg-hover);
+  --luntra-button-bg-active: var(--luntra-color-action-ghost-bg-active);
+  --luntra-button-fg: var(--luntra-color-action-ghost-fg);
+}
+
+.root[data-variant='destructive'] {
+  --luntra-button-bg: var(--luntra-color-destructive-bg);
+  --luntra-button-bg-hover: var(--luntra-color-destructive-bg-hover);
+  --luntra-button-bg-active: var(--luntra-color-destructive-bg-active);
+  --luntra-button-fg: var(--luntra-color-destructive-fg);
+}
+
+/* Sizes ------------------------------------------------------------------- */
+
+.root[data-size='sm'] {
+  min-height: var(--luntra-space-8);
+  padding: var(--luntra-space-1) var(--luntra-space-3);
+  font-size: var(--luntra-font-size-xs);
+}
+
+.root[data-size='md'] {
+  min-height: var(--luntra-space-10);
+}
+
+/*
+ * SC 2.5.8 only demands 24px, but 44px is the AAA figure from SC 2.5.5 and the
+ * size at which a touch target stops being a coin toss.
+ */
+.root[data-size='lg'] {
+  min-height: var(--luntra-target-size-comfortable);
+  padding: var(--luntra-space-3) var(--luntra-space-6);
+  font-size: var(--luntra-font-size-md);
+}
+
+/* States ------------------------------------------------------------------ */
+
+/*
+ * `[data-disabled]` matches on presence, which is why `dataAttrs` omits false
+ * rather than rendering `data-disabled="false"`.
+ *
+ * The button stays focusable — it carries `aria-disabled`, not the native
+ * `disabled` attribute — so it keeps a visible focus ring and remains readable.
+ * The disabled colours are still held to 4.5:1 by the contrast tests: a control
+ * a user can reach but cannot read is worse than one they cannot reach.
+ */
+.root[data-disabled] {
+  --luntra-button-bg: var(--luntra-color-disabled-bg);
+  --luntra-button-fg: var(--luntra-color-disabled-fg);
+  --luntra-button-border-color: var(--luntra-color-disabled-border);
+
+  cursor: not-allowed;
+}
+
+.root[data-variant='ghost'][data-disabled] {
+  --luntra-button-bg: transparent;
+  --luntra-button-border-color: transparent;
+}
+
+/*
+ * Loading shows a spinner *beside* the label rather than replacing it. Swapping
+ * the label would change the accessible name mid-action, which a screen reader
+ * announces as a different button — and announces again when it changes back.
+ */
+.root[data-loading]::before {
+  content: '';
+  width: 1em;
+  height: 1em;
+  flex: none;
+
+  border: var(--luntra-border-width-thick) solid currentcolor;
+  border-top-color: transparent;
+  border-radius: var(--luntra-radius-full);
+
+  animation: luntra-button-spin var(--luntra-duration-slow) linear infinite;
+}
+
+@keyframes luntra-button-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+/*
+ * WCAG 2.2 SC 2.3.3 (Animation from Interactions). The spinner still has to
+ * signal "working", so it steps rather than stopping: a frozen spinner reads as
+ * a hung interface.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .root {
+    transition-duration: var(--luntra-duration-instant);
+  }
+
+  .root[data-loading]::before {
+    animation-duration: 1.5s;
+    animation-timing-function: steps(8, end);
+  }
+}
+
+/*
+ * Windows High Contrast Mode replaces every author colour with system ones, so
+ * the variants collapse into each other and the focus ring — drawn with a
+ * colour — can vanish entirely. `ButtonText` restores a real boundary, and
+ * `forced-color-adjust: none` on the outline keeps the indicator visible.
+ */
+@media (forced-colors: active) {
+  .root {
+    border-color: ButtonText;
+  }
+
+  .root:focus-visible {
+    outline-color: Highlight;
+    forced-color-adjust: none;
+  }
+
+  .root[data-disabled] {
+    border-color: GrayText;
+    color: GrayText;
+  }
+}
