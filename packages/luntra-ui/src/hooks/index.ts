@@ -4,3 +4,6 @@
  */
 
 export { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect.js';
+export { useMergedRefs } from './use-merged-refs.js';
+export { useControllableState } from './use-controllable-state.js';
+export type { UseControllableStateOptions } from './use-controllable-state.js';
