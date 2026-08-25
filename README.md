@@ -33,7 +33,7 @@ pnpm typecheck
 pnpm dev          # run the docs portal
 ```
 
-Requires Node >= 20.19 and pnpm 10.
+Requires Node >= 22.19 and pnpm 10.
 
 The docs portal depends on the library's built output, so `pnpm build` has to
 run before `pnpm dev` on a fresh clone. It also generates its route tree and its
@@ -57,7 +57,7 @@ release.
 | `build-output` tests  | A broken `exports` entry, a stripped `"use client"`, CSS that didn't ship                   |
 | `publint` + `attw`    | Packaging that only fails once someone installs it                                          |
 | `size-limit`          | A bundle regression, and tree-shaking quietly breaking                                      |
-| Node 20.19 / 22 / 24  | Code that only works on the maintainer's Node version                                       |
+| Node 22.19 / 24       | Code that only works on the maintainer's Node version                                       |
 
 ## Contributing
 

@@ -371,7 +371,7 @@ Consumers override with `[data-luntra-part='button'][data-variant='primary'] { -
 - `release.yml`: `changesets/action` opens a "Version Packages" PR; merging it publishes to npm with **provenance** (`NPM_CONFIG_PROVENANCE=true`, OIDC via `id-token: write`).
 - `ci.yml`, in four jobs:
   - `verify` — lint + `format:check`, single Node. ESLint and Prettier don't vary by runtime.
-  - `test` — typecheck + `test --coverage` on Node 20.19 / 22 / 24, `fail-fast: false`. "Broken on the oldest supported version" and "broken everywhere" are different bugs, and the difference is most of the diagnosis.
+  - `test` — typecheck + `test --coverage` on Node 22.19 / 24, `fail-fast: false`. "Broken on the oldest supported version" and "broken everywhere" are different bugs, and the difference is most of the diagnosis.
   - `build` — build → `test:dist` → `publint` → `attw` → `size-limit` → docs build → docs typecheck → SSR a11y audit.
   - `changeset` — PR only.
 - **Ordering is load-bearing.** `build-output.test.ts` skips itself when `dist/` is absent, so running it before the build is worse than not running it at all: a green tick for assertions that never executed. It runs as `test:dist`, after the build, and only there. The docs typecheck likewise comes after the docs build, which is what generates the route tree and the props table.
@@ -402,4 +402,4 @@ Consumers override with `[data-luntra-part='button'][data-variant='primary'] { -
 | TanStack Start has no native MDX routing             | Catch-all route + `import.meta.glob` avoids per-file wrappers                                                                             |
 | axe gives false confidence                           | Explicit manual SC checklist + behavioural tests per component; axe is a floor                                                            |
 | `aria-disabled` diverges from native `disabled`      | Block click/Enter/Space/submit explicitly and cover each path with a test                                                                 |
-| Node 23 is non-LTS                                   | CI matrix pins 20.19 / 22 / 24; `engines` field set                                                                                       |
+| Node 23 is non-LTS                                   | CI matrix pins 22.19 / 24; `engines` field set                                                                                            |
