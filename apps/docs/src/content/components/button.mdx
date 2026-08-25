@@ -1,0 +1,178 @@
+---
+title: Button
+description: Triggers an action. Four variants, three sizes, and it stays reachable when disabled.
+group: Components
+order: 1
+---
+
+<Preview inline code={`<Button>Save changes</Button>`}>
+  <Button>Save changes</Button>
+</Preview>
+
+## Variants
+
+Visual weight only. A variant carries no meaning on its own.
+
+<Preview
+  inline
+  code={`<Button variant="primary">Primary</Button>
+<Button variant="secondary">Secondary</Button>
+<Button variant="ghost">Ghost</Button>
+<Button variant="destructive">Delete</Button>`}
+>
+  <Button variant="primary">Primary</Button>
+  <Button variant="secondary">Secondary</Button>
+  <Button variant="ghost">Ghost</Button>
+  <Button variant="destructive">Delete</Button>
+</Preview>
+
+<A11yNotes tone="responsibility" title="Red is not a warning">
+  `destructive` styles a button red. It does not warn anybody: colour is
+  invisible in audio, and replaced entirely in forced-colors mode. If an action
+  is irreversible, say so in the label — "Delete project" rather than "Delete" —
+  or confirm it. WCAG 2.2 SC 1.4.1.
+</A11yNotes>
+
+## Sizes
+
+<Preview
+  inline
+  code={`<Button size="sm">Small</Button>
+<Button size="md">Medium</Button>
+<Button size="lg">Large</Button>`}
+>
+  <Button size="sm">Small</Button>
+  <Button size="md">Medium</Button>
+  <Button size="lg">Large</Button>
+</Preview>
+
+Every size clears the 24×24 CSS pixel minimum of SC 2.5.8, enforced with
+`min-height` so a one-character label cannot shrink it below the floor. `lg` reaches
+44px, the AAA figure from SC 2.5.5 — prefer it for primary actions on touch, where
+a mis-tap costs a page load.
+
+## Disabled
+
+<Preview
+  inline
+  code={`<Button disabled>Save</Button>
+<Button variant="secondary" disabled>Cancel</Button>`}
+>
+  <Button disabled>Save</Button>
+  <Button variant="secondary" disabled>
+    Cancel
+  </Button>
+</Preview>
+
+Tab to these. They receive focus, and they announce themselves — but nothing
+happens when you press them.
+
+That is deliberate, and it is the opposite of what the native `disabled` attribute
+does. See [Accessibility](/docs/accessibility#disabled-controls-stay-focusable) for
+the full reasoning.
+
+<A11yNotes tone="responsibility" title="Say why it is disabled">
+  ```tsx
+  <Button disabled aria-describedby="save-hint">
+    Save
+  </Button>
+  <p id="save-hint">Add a title before saving.</p>
+  ```
+</A11yNotes>
+
+## Loading
+
+<Preview inline code={`<Button loading>Save changes</Button>`}>
+  <Button loading>Save changes</Button>
+</Preview>
+
+`loading` sets `aria-busy`, blocks activation, and **keeps the label**. The spinner
+is a CSS pseudo-element, so assistive technology never sees it.
+
+Swapping the label for a spinner — or appending "Loading…" — changes the accessible
+name mid-action. A screen reader announces that as a different button, then
+announces it again when the action finishes. The user hears churn and learns
+nothing.
+
+<A11yNotes tone="responsibility" title="Announce the outcome">
+  `aria-busy` says work is happening. It does not say what happened. Put the result
+  in a live region:
+
+```tsx
+<p role="status">{saved ? 'Changes saved' : null}</p>
+```
+
+</A11yNotes>
+
+## Rendering a link
+
+When the control navigates, it should be a link. Pass one:
+
+<Preview
+  inline
+  code={`<Button render={<a href="/docs/theming" />}>Read about theming</Button>`}
+>
+  <Button render={<a href="/docs/theming" />}>Read about theming</Button>
+</Preview>
+
+Right-click it. You get the link context menu, because it is still a link — it keeps
+the link role, native <kbd>Enter</kbd> handling, and open-in-new-tab.
+
+The component recognises the destination rather than the tag, so a router's
+`<Link>` works the same way:
+
+<Preview
+  inline
+  code={`<Button render={<Link to="/docs/theming" />}>Read about theming</Button>`}
+>
+  <Button variant="secondary" render={<a href="/docs/theming" />}>
+    Also a link
+  </Button>
+</Preview>
+
+| `render`                                          | Role     | Keyboard                                       |
+| ------------------------------------------------- | -------- | ---------------------------------------------- |
+| omitted, or `<button>`                            | `button` | <kbd>Enter</kbd> and <kbd>Space</kbd>, native  |
+| `<a href="…">`, or a component with `href` / `to` | `link`   | <kbd>Enter</kbd>, native                       |
+| anything else                                     | `button` | <kbd>Space</kbd> synthesised, `tabIndex` added |
+
+An `<a>` is deliberately **not** given `role="button"`. Announcing it as a button
+while it still navigates takes away the context menu, open-in-new-tab, and the
+reader's correct expectation of what pressing it will do.
+
+A router `<Link>` is a component, so the anchor it emits does not exist yet when
+the decision is made — the destination prop is the only honest signal, and
+checking `tagName` after mount would be one paint too late. An `<a>` with neither
+`href` nor `to` counts as custom, since it is neither focusable nor a link.
+
+## Props
+
+<PropsTable of="Button" />
+
+Every other `<button>` attribute is accepted and forwarded — `type`, `form`,
+`name`, `aria-*`, `data-*`. Only the props the library declares are listed here;
+the rest are documented on MDN.
+
+## Styling
+
+The component exposes a stable part identifier and its state as data attributes, so
+you can style it without knowing or pinning a generated class name:
+
+```css
+[data-luntra-part='button'][data-variant='primary'] {
+  border-radius: 0;
+}
+
+[data-luntra-part='button'][data-loading] {
+  cursor: progress;
+}
+```
+
+Available: `data-luntra-part="button"`, `data-variant`, `data-size`,
+`data-loading`, `data-disabled`. The boolean ones are present-or-absent rather than
+`="true"`/`="false"`, so `[data-loading]` is the whole selector.
+
+The colour tokens the Button consumes, resolved for the theme and brand you have
+selected:
+
+<TokenTable source="semantic" group="color.action" />

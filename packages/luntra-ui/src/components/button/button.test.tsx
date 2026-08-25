@@ -10,7 +10,7 @@
 /* eslint-disable jsx-a11y/anchor-has-content, jsx-a11y/anchor-is-valid -- see
    the note below; the render element is a template, not the final element */
 
-import { createRef } from 'react';
+import { createRef, type ComponentProps } from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
@@ -400,6 +400,74 @@ describe('Button', () => {
      */
     it('treats an anchor with no href as a custom element', () => {
       render(<Button render={<a>Press</a>} />);
+
+      const button = screen.getByRole('button', { name: 'Press' });
+      expect(button).toHaveAttribute('tabindex', '0');
+    });
+
+    /**
+     * Caught by the docs site, which renders its call-to-action buttons as
+     * TanStack `<Link>`s.
+     *
+     * A router link is a *component*, so `render.type` is a function and the
+     * anchor it emits does not exist yet when the element kind is decided. The
+     * component used to classify it as custom and stamp `role="button"` onto a
+     * real anchor — announcing it as a button while it still navigated, and
+     * costing the user the link role, the context menu and open-in-new-tab.
+     */
+    it('treats a router link component as a link, not a custom element', () => {
+      function RouterLink({ to, ...props }: { to: string } & ComponentProps<'a'>) {
+        return <a href={to} {...props} />;
+      }
+
+      render(<Button render={<RouterLink to="/pricing" />}>Pricing</Button>);
+
+      const link = screen.getByRole('link', { name: 'Pricing' });
+      expect(link).toHaveAttribute('href', '/pricing');
+      expect(link).not.toHaveAttribute('role');
+      expect(link).not.toHaveAttribute('tabindex');
+    });
+
+    it('treats a component with an href the same way', () => {
+      function Anchor(props: ComponentProps<'a'>) {
+        return <a {...props} />;
+      }
+
+      render(<Button render={<Anchor href="/pricing" />}>Pricing</Button>);
+
+      expect(screen.getByRole('link', { name: 'Pricing' })).not.toHaveAttribute('role');
+    });
+
+    /**
+     * The conservative half of the same rule. A component with no destination
+     * might render anything, so it gets the full button treatment: redundant if
+     * it turns out to render a `<button>`, but a `<div>` is left operable
+     * rather than unreachable.
+     */
+    it('gives a component with no destination the full button treatment', () => {
+      function Box(props: ComponentProps<'div'>) {
+        return <div {...props} />;
+      }
+
+      render(<Button render={<Box />}>Press</Button>);
+
+      const button = screen.getByRole('button', { name: 'Press' });
+      expect(button.tagName).toBe('DIV');
+      expect(button).toHaveAttribute('tabindex', '0');
+    });
+
+    /**
+     * `href` on a `<span>` is inert, so it says nothing about the element's
+     * role. Only an anchor can navigate.
+     *
+     * TypeScript rejects `href` on a span, which is exactly why the cast is
+     * here: the guard exists for JavaScript consumers the compiler cannot
+     * reach, and for props spread in from an untyped source.
+     */
+    it('does not treat an href on a non-anchor intrinsic element as navigation', () => {
+      const inertHref = { href: '/pricing' } as unknown as ComponentProps<'span'>;
+
+      render(<Button render={<span {...inertHref} />}>Press</Button>);
 
       const button = screen.getByRole('button', { name: 'Press' });
       expect(button).toHaveAttribute('tabindex', '0');

@@ -1,0 +1,497 @@
+/*
+ * The documentation site's own styles.
+ *
+ * Built entirely on the library's public tokens, no hard-coded colours. The
+ * docs are the first consumer, so if the token set is not enough to build a
+ * real site with, that is a gap in the library rather than a reason to reach
+ * for a hex value here.
+ */
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  /*
+   * `clip-path` with a 1px box rather than `display: none` or
+   * `visibility: hidden`, both of which remove the element from the
+   * accessibility tree — the opposite of what visually-hidden text is for.
+   */
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/*
+ * Visible only while focused. It has to occupy real space when focused, not
+ * overlay the header, or the user cannot tell what they are about to activate.
+ */
+.skip-link {
+  position: absolute;
+  left: var(--luntra-space-2);
+  top: calc(var(--luntra-space-2) * -10);
+  z-index: 100;
+  padding: var(--luntra-space-3) var(--luntra-space-4);
+  background: var(--luntra-color-surface-raised);
+  color: var(--luntra-color-text);
+  border-radius: var(--luntra-radius-md);
+  border: var(--luntra-border-width-thin) solid var(--luntra-color-border-strong);
+  text-decoration: none;
+  transition: top var(--luntra-duration-fast) ease;
+}
+
+.skip-link:focus-visible {
+  top: var(--luntra-space-2);
+  outline: var(--luntra-focus-ring-width) var(--luntra-focus-ring-style)
+    var(--luntra-color-focus-ring);
+  outline-offset: var(--luntra-focus-ring-offset);
+}
+
+body {
+  margin: 0;
+  background: var(--luntra-color-surface);
+  color: var(--luntra-color-text);
+  font-family: var(--luntra-font-family-sans);
+  font-size: var(--luntra-font-size-md);
+  line-height: var(--luntra-line-height-normal);
+}
+
+/* ---------------------------------------------------------------- header */
+
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--luntra-space-4);
+  flex-wrap: wrap;
+  padding: var(--luntra-space-4) var(--luntra-space-6);
+  border-bottom: var(--luntra-border-width-thin) solid var(--luntra-color-border);
+  background: var(--luntra-color-surface-raised);
+}
+
+.site-header__brand {
+  font-weight: var(--luntra-font-weight-semibold);
+  font-size: var(--luntra-font-size-lg);
+  color: var(--luntra-color-text);
+  text-decoration: none;
+}
+
+.site-header__brand:focus-visible,
+.site-nav__link:focus-visible,
+.preview__toggle:focus-visible,
+.table-scroll:focus-visible,
+.prose a:focus-visible {
+  outline: var(--luntra-focus-ring-width) var(--luntra-focus-ring-style)
+    var(--luntra-color-focus-ring);
+  outline-offset: var(--luntra-focus-ring-offset);
+  border-radius: var(--luntra-radius-sm);
+}
+
+.theme-controls {
+  display: flex;
+  gap: var(--luntra-space-4);
+  flex-wrap: wrap;
+}
+
+.theme-controls__field {
+  display: flex;
+  align-items: center;
+  gap: var(--luntra-space-2);
+  font-size: var(--luntra-font-size-sm);
+}
+
+.theme-controls__field select {
+  /*
+   * `min-height` clears the 24px floor of WCAG 2.2 SC 2.5.8. Native selects
+   * are usually large enough already, but not once a page sets a small
+   * font-size on form controls.
+   */
+  min-height: var(--luntra-target-size-min);
+  padding: var(--luntra-space-1) var(--luntra-space-2);
+  font: inherit;
+  color: var(--luntra-color-text);
+  background: var(--luntra-color-surface);
+  border: var(--luntra-border-width-thin) solid var(--luntra-color-border-strong);
+  border-radius: var(--luntra-radius-sm);
+}
+
+.theme-controls__field select:focus-visible {
+  outline: var(--luntra-focus-ring-width) var(--luntra-focus-ring-style)
+    var(--luntra-color-focus-ring);
+  outline-offset: var(--luntra-focus-ring-offset);
+}
+
+/* ---------------------------------------------------------------- layout */
+
+.site-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--luntra-space-8);
+  max-width: 82rem;
+  margin: 0 auto;
+  padding: var(--luntra-space-8) var(--luntra-space-6);
+}
+
+@media (min-width: 60rem) {
+  .site-layout {
+    grid-template-columns: 15rem minmax(0, 1fr);
+  }
+}
+
+.site-main:focus {
+  /*
+   * The skip link target is `tabIndex={-1}`, which makes it programmatically
+   * focusable. Browsers draw a focus ring on it, which is noise — the user
+   * asked to be moved here, they know where they are.
+   */
+  outline: none;
+}
+
+/* ------------------------------------------------------------------- nav */
+
+.site-nav__heading {
+  font-size: var(--luntra-font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--luntra-color-text-muted);
+  margin: var(--luntra-space-6) 0 var(--luntra-space-2);
+}
+
+.site-nav__group:first-child .site-nav__heading {
+  margin-top: 0;
+}
+
+.site-nav__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--luntra-space-1);
+}
+
+.site-nav__link {
+  display: block;
+  padding: var(--luntra-space-2) var(--luntra-space-3);
+  border-radius: var(--luntra-radius-md);
+  color: var(--luntra-color-text-muted);
+  text-decoration: none;
+  /* Clears the SC 2.5.8 target minimum even with a one-word label. */
+  min-height: var(--luntra-target-size-min);
+}
+
+.site-nav__link:hover {
+  background: var(--luntra-color-action-ghost-bg-hover);
+  color: var(--luntra-color-text);
+}
+
+.site-nav__link[aria-current='page'] {
+  background: var(--luntra-color-action-subtle-bg);
+  color: var(--luntra-color-action-subtle-fg);
+  font-weight: var(--luntra-font-weight-medium);
+}
+
+@media (forced-colors: active) {
+  /*
+   * Forced-colors replaces the background, so the current page loses its only
+   * visual marker. An underline survives, because it is not a colour.
+   */
+  .site-nav__link[aria-current='page'] {
+    text-decoration: underline;
+    text-underline-offset: 0.25em;
+  }
+}
+
+/* ----------------------------------------------------------------- prose */
+
+.prose {
+  max-width: 46rem;
+}
+
+.prose h1 {
+  font-size: var(--luntra-font-size-3xl);
+  line-height: var(--luntra-line-height-tight);
+  margin: 0 0 var(--luntra-space-3);
+}
+
+.prose h2 {
+  font-size: var(--luntra-font-size-2xl);
+  line-height: var(--luntra-line-height-tight);
+  margin: var(--luntra-space-10) 0 var(--luntra-space-3);
+}
+
+.prose h3 {
+  font-size: var(--luntra-font-size-lg);
+  margin: var(--luntra-space-8) 0 var(--luntra-space-2);
+}
+
+.prose__lede {
+  font-size: var(--luntra-font-size-lg);
+  color: var(--luntra-color-text-muted);
+  margin-top: 0;
+}
+
+.prose a {
+  color: var(--luntra-color-action-ghost-fg);
+  /*
+   * Underlined, always. Colour alone is not enough to identify a link in
+   * running text — WCAG 2.2 SC 1.4.1 — and 3:1 against the surrounding text is
+   * not achievable for most palettes anyway.
+   */
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.prose code {
+  font-family: var(--luntra-font-family-mono);
+  font-size: 0.9em;
+  padding: 0.1em 0.35em;
+  border-radius: var(--luntra-radius-sm);
+  background: var(--luntra-color-surface-subtle);
+}
+
+.prose pre {
+  padding: var(--luntra-space-4);
+  border-radius: var(--luntra-radius-lg);
+  border: var(--luntra-border-width-thin) solid var(--luntra-color-border);
+  overflow-x: auto;
+}
+
+.prose pre code {
+  padding: 0;
+  background: none;
+}
+
+.home__actions {
+  display: flex;
+  gap: var(--luntra-space-3);
+  flex-wrap: wrap;
+}
+
+/* ----------------------------------------------------------------- shiki */
+
+/*
+ * Shiki emits both themes as custom properties and this switches between them
+ * on `data-theme`, so code follows the site theme with no re-highlighting and
+ * no JavaScript. `--shiki-dark` is only read under the dark selector.
+ */
+.shiki,
+.shiki span {
+  color: var(--shiki-light);
+  background-color: var(--shiki-light-bg);
+}
+
+[data-theme='dark'] .shiki,
+[data-theme='dark'] .shiki span {
+  color: var(--shiki-dark);
+  background-color: var(--shiki-dark-bg);
+}
+
+/* --------------------------------------------------------------- preview */
+
+.preview {
+  margin: var(--luntra-space-6) 0;
+  border: var(--luntra-border-width-thin) solid var(--luntra-color-border);
+  border-radius: var(--luntra-radius-lg);
+  overflow: hidden;
+}
+
+.preview__stage {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--luntra-space-3);
+  padding: var(--luntra-space-6);
+  background: var(--luntra-color-surface);
+}
+
+.preview[data-surface='subtle'] .preview__stage {
+  background: var(--luntra-color-surface-subtle);
+}
+
+.preview__stage[data-inline] {
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.preview__toolbar {
+  display: flex;
+  justify-content: flex-end;
+  padding: var(--luntra-space-2);
+  border-top: var(--luntra-border-width-thin) solid var(--luntra-color-border);
+  background: var(--luntra-color-surface-subtle);
+}
+
+.preview__toggle {
+  min-height: var(--luntra-target-size-min);
+  padding: var(--luntra-space-1) var(--luntra-space-3);
+  font: inherit;
+  font-size: var(--luntra-font-size-sm);
+  color: var(--luntra-color-action-ghost-fg);
+  background: none;
+  border: 0;
+  border-radius: var(--luntra-radius-sm);
+  cursor: pointer;
+}
+
+.preview__toggle:hover {
+  background: var(--luntra-color-action-ghost-bg-hover);
+}
+
+.preview__code {
+  border-top: var(--luntra-border-width-thin) solid var(--luntra-color-border);
+}
+
+.preview__code pre {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+}
+
+/* ---------------------------------------------------------------- tables */
+
+.table-scroll {
+  overflow-x: auto;
+  margin: var(--luntra-space-6) 0;
+  border: var(--luntra-border-width-thin) solid var(--luntra-color-border);
+  border-radius: var(--luntra-radius-lg);
+}
+
+.props-table,
+.token-table,
+.table-scroll table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--luntra-font-size-sm);
+  text-align: left;
+}
+
+.table-scroll th,
+.table-scroll td {
+  padding: var(--luntra-space-3);
+  border-bottom: var(--luntra-border-width-thin) solid var(--luntra-color-border);
+  vertical-align: top;
+}
+
+.table-scroll thead th {
+  background: var(--luntra-color-surface-subtle);
+  font-weight: var(--luntra-font-weight-semibold);
+}
+
+.table-scroll tbody tr:last-child th,
+.table-scroll tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.props-table__required {
+  color: var(--luntra-color-destructive-bg);
+  font-weight: var(--luntra-font-weight-regular);
+  font-size: var(--luntra-font-size-xs);
+}
+
+.props-table__example {
+  margin: var(--luntra-space-2) 0 0;
+  padding: var(--luntra-space-2);
+  font-size: var(--luntra-font-size-xs);
+  border-radius: var(--luntra-radius-sm);
+  background: var(--luntra-color-surface-subtle);
+  border: 0;
+}
+
+.token-table__resolved {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--luntra-space-2);
+}
+
+.token-table__swatch {
+  width: 1rem;
+  height: 1rem;
+  flex: none;
+  border-radius: var(--luntra-radius-sm);
+  /*
+   * A border so a swatch the same colour as the page still has an edge —
+   * white on white, black on black. SC 1.4.11 applies to the swatch itself,
+   * since it is the only non-text carrier of the value.
+   */
+  border: var(--luntra-border-width-thin) solid var(--luntra-color-border-strong);
+}
+
+/* ------------------------------------------------------------ a11y notes */
+
+.a11y-notes {
+  margin: var(--luntra-space-6) 0;
+  padding: var(--luntra-space-4) var(--luntra-space-5);
+  border-radius: var(--luntra-radius-lg);
+  border: var(--luntra-border-width-thin) solid var(--luntra-color-border);
+  /*
+   * The left edge is a border, not a background gradient, so it survives
+   * forced-colors mode — where a background would be replaced and the callout
+   * would lose its only boundary.
+   */
+  border-left-width: var(--luntra-border-width-thick);
+  background: var(--luntra-color-surface-subtle);
+}
+
+.a11y-notes[data-tone='guarantee'] {
+  border-left-color: var(--luntra-color-action-bg);
+}
+
+.a11y-notes[data-tone='responsibility'] {
+  border-left-color: var(--luntra-color-destructive-bg);
+}
+
+.a11y-notes__title {
+  display: flex;
+  align-items: center;
+  gap: var(--luntra-space-2);
+  margin: 0 0 var(--luntra-space-2);
+  font-size: var(--luntra-font-size-md);
+}
+
+.a11y-notes__badge {
+  width: 0.5rem;
+  height: 0.5rem;
+  flex: none;
+  border-radius: var(--luntra-radius-full);
+  background: currentcolor;
+}
+
+.a11y-notes__body > :first-child {
+  margin-top: 0;
+}
+
+.a11y-notes__body > :last-child {
+  margin-bottom: 0;
+}
+
+/* --------------------------------------------------------------- anchors */
+
+.heading-anchor {
+  /*
+   * Reveal on hover *or* focus. Hover-only would make the permalink
+   * unreachable by keyboard, and it is already in the tab order.
+   */
+  opacity: 0;
+  margin-left: var(--luntra-space-2);
+  text-decoration: none;
+}
+
+.heading-anchor::after {
+  content: '#';
+  color: var(--luntra-color-text-muted);
+}
+
+:is(h2, h3, h4):hover .heading-anchor,
+.heading-anchor:focus-visible {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skip-link {
+    transition: none;
+  }
+}

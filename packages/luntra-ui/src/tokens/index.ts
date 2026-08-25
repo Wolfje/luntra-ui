@@ -33,3 +33,4 @@ export {
   toCssValue,
   toCssVarName,
 } from './resolve.js';
+export type { TokenTree } from './resolve.js';

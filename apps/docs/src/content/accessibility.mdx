@@ -1,0 +1,100 @@
+---
+title: Accessibility
+description: What Luntra UI guarantees, how it is verified, and what it cannot do for you.
+group: Foundations
+order: 2
+---
+
+Every component targets **WCAG 2.2 level AA** by default. Not as a mode you opt
+into, and not as a prop — as the only behaviour there is.
+
+## Why "by default" matters
+
+Accessibility features that must be switched on are switched off. A library that
+offers `<Button a11y>` has already lost: the people who know to pass the prop were
+never the problem.
+
+So the choices here run the other way. Disabled buttons stay focusable. Focus rings
+cannot be removed by a prop. Colour contrast is a build failure, not a lint warning.
+Where a decision could go either way, it goes the way that is harder to get wrong.
+
+<A11yNotes title="What the library handles">
+  - **Roles and semantics** — the right element for the job, and correct ARIA
+  only where the platform has no equivalent. - **Keyboard operation** — every
+  control is reachable and operable without a pointer, including the ones
+  rendered as custom elements. - **Focus visibility** — a 2px ring at 3:1
+  against every surface it can appear on, in every brand and both themes. SC
+  2.4.11 and 2.4.13. - **Target size** — every interactive element clears 24×24
+  CSS pixels. SC 2.5.8. - **Colour contrast** — proved against the tokens rather
+  than sampled from a screenshot. SC 1.4.3 and 1.4.11. - **Reduced motion** —
+  `prefers-reduced-motion` is respected without removing the information the
+  motion was carrying. SC 2.3.3. - **Forced colours** — components stay legible
+  and focus stays visible when Windows High Contrast Mode replaces the palette.
+  - **Server rendering** — the correct semantics are in the server HTML, so the
+  page is never briefly wrong.
+</A11yNotes>
+
+## Disabled controls stay focusable
+
+The single most consequential decision in the library.
+
+`disabled` renders as `aria-disabled`, never the native `disabled` attribute.
+A natively disabled button is removed from the tab order entirely — a screen-reader
+user tabbing through a form never encounters it. The action they came for has not
+been _disabled_ from their point of view; it has silently ceased to exist, with no
+explanation and nothing to ask about.
+
+`aria-disabled` keeps the control focusable and announced while the component blocks
+every route to activation.
+
+<A11yNotes tone="responsibility" title="Which means you have to say why">
+  Announcing "Save, dimmed" is better than silence, but it still does not tell
+  anyone what to do. Pair a disabled control with an explanation:
+
+```tsx
+<Button disabled aria-describedby="save-hint">Save</Button>
+<p id="save-hint">Add a title before saving.</p>
+```
+
+</A11yNotes>
+
+## How it is verified
+
+Four layers, each catching what the others cannot:
+
+| Layer                      | Catches                                                                    |
+| -------------------------- | -------------------------------------------------------------------------- |
+| Contrast tests over tokens | Any colour pair below its threshold, in any brand, either theme, any state |
+| Behavioural unit tests     | Keyboard operation, focus movement, accessible names, activation blocking  |
+| axe via `vitest-axe`       | Structural ARIA errors, in every variant and state                         |
+| SSR tests                  | Semantics missing from the server HTML                                     |
+
+axe is the least important of the four, deliberately. Automated tooling catches
+somewhere around a third of real accessibility problems — it is a regression net,
+not a certificate. A component can pass axe cleanly and still be unusable.
+
+The tests that matter are the behavioural ones, because they assert what a person
+using the component actually experiences: that <kbd>Tab</kbd> reaches it, that
+
+<kbd>Enter</kbd> operates it, that its name does not change underneath them.
+
+## What no library can do for you
+
+<A11yNotes tone="responsibility" title="Still yours">
+  - **Give controls meaningful names.** An icon-only button needs `aria-label`.
+  "Click here" passes every automated check and fails every user. - **Structure
+  the page.** Headings in order, landmarks, one `h1`, a skip link. - **Manage
+  focus.** When something opens, closes, or removes the element that was
+  focused, focus has to go somewhere deliberate. - **Announce what changed.**
+  `aria-busy` says work is happening. It does not say what happened. Results
+  belong in a live region. - **Not rely on colour alone.**
+  `variant="destructive"` styles a button red. It does not warn anyone, and it
+  is invisible in audio and in forced-colors mode. - **Write clear language.**
+  No component can fix a confusing label.
+</A11yNotes>
+
+## Reporting a gap
+
+If a component fails a success criterion, that is a bug and not a feature request.
+[Open an issue](https://github.com/Wolfje/luntra-ui/issues) with the assistive
+technology and browser you were using.

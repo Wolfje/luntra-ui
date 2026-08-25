@@ -1,0 +1,44 @@
+{
+  "name": "@luntra-ui/docs",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "predev": "pnpm run build:props",
+    "dev": "vite dev --port 3000",
+    "build:props": "tsx scripts/build-props.ts",
+    "prebuild": "pnpm run build:props",
+    "build": "vite build",
+    "preview": "vite preview --port 3000",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@luntra-ui/react": "workspace:*",
+    "@mdx-js/react": "^3.1.1",
+    "@tanstack/react-router": "^1.170.32",
+    "@tanstack/react-start": "^1.168.49",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@mdx-js/rollup": "^3.1.1",
+    "@shikijs/rehype": "^4.4.3",
+    "@types/mdx": "^2.0.14",
+    "@types/node": "^26.3.0",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.5",
+    "@vitejs/plugin-react": "^6.1.0",
+    "react-docgen-typescript": "^2.4.0",
+    "rehype-autolink-headings": "^7.1.0",
+    "rehype-slug": "^6.0.0",
+    "remark-frontmatter": "^5.0.0",
+    "remark-gfm": "^4.0.1",
+    "remark-mdx-frontmatter": "^5.2.0",
+    "tsx": "^4.20.6",
+    "typescript": "~5.9.3",
+    "vite": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=20.19.0"
+  }
+}

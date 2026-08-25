@@ -23,14 +23,34 @@ export function toCssVarName(path: readonly string[]): string {
   return `${TOKEN_PREFIX}-${path.map(kebab).join('-')}`;
 }
 
-type TokenTree = { [key: string]: string | number | TokenTree };
+/**
+ * A nested token object: string or number leaves, arbitrarily deep.
+ *
+ * This documents the shape. It is deliberately *not* the parameter type of
+ * `flatten` — see below.
+ */
+export type TokenTree = {
+  readonly [key: string]: string | number | TokenTree;
+};
 
 /**
  * Walk a nested token object into `{ '--luntra-a-b': 'value' }` pairs,
  * preserving declaration order so the generated CSS reads top-to-bottom in the
  * same shape as the source.
+ *
+ * ## Why the parameter is `object` rather than `TokenTree`
+ *
+ * TypeScript gives implicit index signatures to type aliases but not to
+ * interfaces, so `SemanticTokens` — an interface, and the exact thing this
+ * function exists to flatten — is not assignable to `TokenTree`. Neither is any
+ * interface a consumer declares for their own tokens. A public function that
+ * rejects the public data it was built for is not much of an API.
+ *
+ * The walk only reads keys and narrows leaves with `typeof`, so a wider
+ * parameter costs no safety here: anything that is not a string or number is
+ * recursed into, and anything that is, is emitted.
  */
-export function flatten(tree: TokenTree, prefix: readonly string[] = []): Map<string, string> {
+export function flatten(tree: object, prefix: readonly string[] = []): Map<string, string> {
   const out = new Map<string, string>();
 
   for (const [key, value] of Object.entries(tree)) {

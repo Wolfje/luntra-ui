@@ -16,6 +16,10 @@ export interface ButtonProps extends Omit<ComponentProps<'button'>, 'disabled'> 
   variant?: ButtonVariant;
 
   /**
+   * Control height. Every size clears the 24x24 CSS pixel minimum of WCAG 2.2
+   * SC 2.5.8; `lg` reaches the 44px AAA figure from SC 2.5.5. Prefer `lg` for
+   * primary actions on touch, where a mis-tap costs the user a page load.
+   *
    * @default 'md'
    */
   size?: ButtonSize;

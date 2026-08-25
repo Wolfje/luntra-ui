@@ -1,0 +1,117 @@
+---
+title: Theming
+description: Light and dark, multiple brands, and no flash of the wrong theme on first paint.
+group: Foundations
+order: 1
+---
+
+Themes and brands are two separate, deliberately disjoint sets of custom properties.
+
+A **theme** decides semantic roles — what a surface is, what text on it is, what a
+border is. A **brand** declares nothing but a colour ramp. Because the two never
+declare the same property, they can never fight over specificity or source order,
+and any brand composes with any theme without a combinatorial explosion of CSS.
+
+Both are driven by data attributes on `<html>`:
+
+```html
+<html data-theme="dark" data-brand="teal"></html>
+```
+
+Try it — the controls in the header drive the real provider over this entire page,
+including the tables and code blocks below.
+
+## Setting it up
+
+```tsx
+import { ThemeProvider } from '@luntra-ui/react';
+
+<ThemeProvider defaultTheme="system" defaultBrand="default">
+  <App />
+</ThemeProvider>;
+```
+
+`defaultTheme="system"` follows the operating system and keeps following it, so a
+reader whose machine switches to dark at sunset gets a dark page without touching
+anything.
+
+## Server rendering: the flash
+
+If you server-render, add the theme script to your document `<head>`:
+
+```tsx
+import { getThemeScript } from '@luntra-ui/react';
+
+<head>
+  <script dangerouslySetInnerHTML={{ __html: getThemeScript() }} />
+</head>;
+```
+
+<A11yNotes tone="responsibility" title="Why this is not optional">
+  The theme lives in `localStorage`, which the server cannot read. Applied in a
+  React effect, the browser paints the default theme first and repaints once
+  React runs. React cannot fix this, because by then the page has already
+  painted.
+
+For most people that flash is a annoyance. For a light-sensitive or
+migraine-prone reader who chose dark mode for a reason, a full-screen flash of
+white is the reason they stop using the site.
+
+</A11yNotes>
+
+The script is a few hundred bytes, runs synchronously before first paint, and
+fails silently if storage is unavailable.
+
+## Reading the theme
+
+```tsx
+import { useTheme } from '@luntra-ui/react';
+
+const { theme, resolvedTheme, brand, setTheme, setBrand } = useTheme();
+```
+
+`theme` is the preference and may be `'system'`. `resolvedTheme` is always
+`'light'` or `'dark'` — the concrete value in the DOM, because CSS cannot act on
+an unresolved preference.
+
+## Semantic tokens
+
+These are what components consume, and what you should reach for when styling
+around them. They follow the theme and brand selected above:
+
+<TokenTable source="semantic" group="color" />
+
+## Primitives
+
+The raw scales beneath the semantic layer. These never change with the theme:
+
+<TokenTable source="primitives" group="space" />
+
+## Building a brand
+
+A brand is a ramp and nothing else:
+
+```css
+[data-brand='sunset'] {
+  --luntra-brand-50: #fff7ed;
+  /* … through … */
+  --luntra-brand-950: #431407;
+}
+```
+
+<A11yNotes title="Contrast is checked, not assumed">
+  The library gates its own tokens with an automated contrast test across every
+  brand, both themes, and every interaction state — resting, hover and active. A
+  ramp stop that puts a component below its WCAG threshold fails the build.
+
+That test is exported. You can point the same maths at your own ramp:
+
+```ts
+import { contrastRatioRounded, meetsContrast } from '@luntra-ui/react/tokens';
+
+meetsContrast('#0f766e', '#e2e8f0', 'text'); // false — 4.44:1
+```
+
+This is how the default palette got fixed rather than the threshold lowered.
+
+</A11yNotes>

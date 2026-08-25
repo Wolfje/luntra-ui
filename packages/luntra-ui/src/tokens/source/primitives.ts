@@ -134,6 +134,16 @@ export const primitives = {
     md: '1rem',
     lg: '1.125rem',
     xl: '1.25rem',
+    /**
+     * The scale stops being purely typographic here and starts being
+     * structural: `2xl` and `3xl` exist for page and section headings.
+     *
+     * Expressed in `rem` throughout, never `px`, so the whole scale grows when
+     * a reader raises their browser's default font size — which is how most
+     * low-vision users actually zoom text. A `px` scale simply ignores them.
+     */
+    '2xl': '1.5rem',
+    '3xl': '1.875rem',
   },
 
   fontWeight: {

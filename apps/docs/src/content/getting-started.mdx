@@ -1,0 +1,71 @@
+---
+title: Getting started
+description: Install Luntra UI, load the styles, and render your first accessible button.
+group: Overview
+order: 1
+---
+
+## Install
+
+```sh
+pnpm add @luntra-ui/react
+```
+
+React 19 is a peer dependency. Nothing else is required — no CSS-in-JS runtime, no
+Babel plugin, no bundler configuration.
+
+## Load the styles
+
+Import the stylesheet once, at the root of your application:
+
+```ts
+import '@luntra-ui/react/styles';
+```
+
+That single import carries the reset, the primitive tokens, both themes and every
+brand. It is plain CSS, so your bundler hashes it, minifies it and serves it like
+any other stylesheet.
+
+If you would rather assemble the layers yourself — to ship only one brand, for
+instance — import them individually:
+
+```ts
+import '@luntra-ui/react/styles/tokens.css';
+import '@luntra-ui/react/styles/themes/light.css';
+import '@luntra-ui/react/styles/themes/dark.css';
+import '@luntra-ui/react/styles/themes/brands/default.css';
+```
+
+## Render something
+
+<Preview inline code={`import { Button } from '@luntra-ui/react';
+
+<Button onClick={() => console.log('pressed')}>Save changes</Button>`}>
+  <Button>Save changes</Button>
+</Preview>
+
+## Import whole, or one at a time
+
+Both of these work, and neither costs more than the other:
+
+```ts
+import { Button } from '@luntra-ui/react';
+import { Button } from '@luntra-ui/react/button';
+```
+
+The build emits one module per component and preserves that structure in the
+published package, so the barrel is a convenience rather than a bundle. Reach for
+the subpath when you want the dependency to be explicit, not because you are
+worried about size.
+
+<A11yNotes tone="responsibility" title="Before you ship">
+  Add the theme script if you server-render. Without it the page paints the
+  default theme and then repaints the stored one — see [Theming](/docs/theming).
+</A11yNotes>
+
+## What next
+
+- [Theming](/docs/theming) — light and dark, plus your own brands.
+- [Accessibility](/docs/accessibility) — what the library guarantees, and what it
+  cannot do for you.
+- [Button](/docs/components/button) — the component API in full.
